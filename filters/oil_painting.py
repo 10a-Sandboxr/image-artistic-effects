@@ -1,9 +1,16 @@
 """Oil painting effect filter"""
 
-from PIL import Image, ImageFilter
+try:
+    from PIL import Image, ImageFilter
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
 
 def apply(img):
     """Apply oil painting effect"""
+    if not PIL_AVAILABLE:
+        raise ImportError("PIL/Pillow not available")
+    
     if img.mode != 'RGB':
         img = img.convert('RGB')
     

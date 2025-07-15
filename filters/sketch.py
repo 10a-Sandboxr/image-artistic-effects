@@ -1,9 +1,16 @@
 """Pencil sketch effect filter"""
 
-from PIL import Image, ImageFilter, ImageOps
+try:
+    from PIL import Image, ImageFilter, ImageOps
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
 
 def apply(img):
     """Apply pencil sketch effect"""
+    if not PIL_AVAILABLE:
+        raise ImportError("PIL/Pillow not available")
+    
     # Convert to grayscale
     img = img.convert('L')
     

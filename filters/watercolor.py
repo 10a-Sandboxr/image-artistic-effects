@@ -1,10 +1,17 @@
 """Watercolor painting effect filter"""
 
-from PIL import Image, ImageFilter, ImageOps
-import numpy as np
+try:
+    from PIL import Image, ImageFilter, ImageOps
+    import numpy as np
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
 
 def apply(img):
     """Apply watercolor painting effect"""
+    if not PIL_AVAILABLE:
+        raise ImportError("PIL/Pillow not available")
+    
     if img.mode != 'RGB':
         img = img.convert('RGB')
     

@@ -3,8 +3,13 @@ Vintage film effect filter
 Adds authentic film grain, color grading, and light leaks
 """
 
-from PIL import Image, ImageFilter, ImageEnhance, ImageOps
-import numpy as np
+try:
+    from PIL import Image, ImageFilter, ImageEnhance, ImageOps
+    import numpy as np
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+
 import os
 import base64
 import subprocess
@@ -12,6 +17,9 @@ import platform
 
 def apply(img):
     """Apply vintage film effect to image"""
+    
+    if not PIL_AVAILABLE:
+        raise ImportError("PIL/Pillow not available")
     
     # Convert to RGB if necessary
     if img.mode != 'RGB':

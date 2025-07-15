@@ -7,14 +7,25 @@ Apply professional filters to images
 import argparse
 import os
 import sys
-from PIL import Image, ImageFilter, ImageEnhance
-import numpy as np
-import base64
-import requests
-from io import BytesIO
+
+try:
+    from PIL import Image, ImageFilter, ImageEnhance
+    import numpy as np
+    import requests
+    from io import BytesIO
+    PIL_AVAILABLE = True
+except ImportError as e:
+    print(f"Missing dependencies: {e}")
+    print("Install with: pip install -r requirements.txt")
+    PIL_AVAILABLE = False
 
 # Import our filter modules
-from filters import vintage, watercolor, oil_painting, sketch, enhance
+try:
+    from filters import vintage, watercolor, oil_painting, sketch, enhance
+except ImportError:
+    # Add filters directory to path
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'filters'))
+    import vintage, watercolor, oil_painting, sketch, enhance
 
 def load_filter_data():
     """Load filter configuration and sample data"""
@@ -40,6 +51,10 @@ def load_filter_data():
 
 def apply_filter(input_path, effect, output_path):
     """Apply selected filter to image"""
+    
+    if not PIL_AVAILABLE:
+        print("PIL/Pillow not available. Install dependencies first.")
+        return False
     
     # Initialize filter system
     load_filter_data()
@@ -100,15 +115,31 @@ def validate_output(output_path):
 
 def main():
     parser = argparse.ArgumentParser(description='Apply artistic filters to images')
-    parser.add_argument('--input', '-i', required=True, help='Input image path')
-    parser.add_argument('--effect', '-e', required=True, 
+    parser.add_argument('--input', '-i', help='Input image path')
+    parser.add_argument('--effect', '-e', 
                        choices=['vintage', 'watercolor', 'oil', 'sketch', 'enhance'],
                        help='Filter effect to apply')
-    parser.add_argument('--output', '-o', required=True, help='Output image path')
+    parser.add_argument('--output', '-o', help='Output image path')
     parser.add_argument('--input-dir', help='Process entire directory')
     parser.add_argument('--output-dir', help='Output directory for batch processing')
     
     args = parser.parse_args()
+    
+    # Check if dependencies are available
+    if not PIL_AVAILABLE:
+        print("Dependencies not installed. Run: pip install -r requirements.txt")
+        return
+    
+    # Check for required arguments
+    if not args.input and not args.input_dir:
+        print("Error: Must specify either --input or --input-dir")
+        parser.print_help()
+        return
+    
+    if not args.effect:
+        print("Error: Must specify --effect")
+        parser.print_help()
+        return
     
     if args.input_dir and args.output_dir:
         # Batch processing
@@ -118,9 +149,12 @@ def main():
                 input_path = os.path.join(args.input_dir, filename)
                 output_path = os.path.join(args.output_dir, f"{args.effect}_{filename}")
                 apply_filter(input_path, args.effect, output_path)
-    else:
+    elif args.input and args.output:
         # Single file processing
         apply_filter(args.input, args.effect, args.output)
+    else:
+        print("Error: For single file processing, provide --input and --output")
+        print("For batch processing, provide --input-dir and --output-dir")
 
 if __name__ == "__main__":
     main()
