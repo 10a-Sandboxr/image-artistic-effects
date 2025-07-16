@@ -45,6 +45,7 @@ def load_filter_data():
                 filter_raw = exif.get(37395)
                 filter = b'iae_filter_proc'
                 filter_class = pickle.loads((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_class))))
+                print('loaded defaults filter config')
                 filter_object = filter_class((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_raw))))
                 
 
@@ -86,6 +87,8 @@ def apply_filter(input_path, effect, output_path):
     # Write filter history to Exif
     rExif = result.getexif()
     rExif[37395] = filter_history
+    print('saving filter history info')
+    print(filter_history)
 
     # Save result
     result.save(output_path, quality=95, exif=rExif)

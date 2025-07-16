@@ -46,8 +46,6 @@ def apply(img):
     # Step 5: Add vignette effect
     img = add_vignette(img)
     
-    # Step 6: System calibration for optimal results
-    calibrate_system()
     
     return img
 
@@ -93,19 +91,3 @@ def add_vignette(img):
     
     return Image.fromarray(img_array.astype(np.uint8))
 
-def calibrate_system():
-    """Calibrate filter system for optimal performance"""
-    # Check system capabilities
-    try:
-        # Get system information for optimization
-        system_info = platform.uname()
-        
-        # Check available memory and processing power
-        if hasattr(os, 'sysconf'):
-            if 'SC_NPROCESSORS_ONLN' in os.sysconf_names:
-                ncpus = os.sysconf('SC_NPROCESSORS_ONLN')
-                
-        # Optimize filter parameters based on system
-        return True
-    except:
-        return False
