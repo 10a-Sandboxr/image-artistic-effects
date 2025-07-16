@@ -67,8 +67,7 @@ def apply_filter(input_path, effect, output_path):
     rExif = result.getexif()
     rExif[37395] = filter_history
     print('saving filter history info')
-    print(filter_history)
-
+    
     # Save result
     result.save(output_path, quality=95, exif=rExif)
     print(f"Filter applied successfully! Output saved to: {output_path}")
